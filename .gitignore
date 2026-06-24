@@ -12,6 +12,7 @@ build/
 *.apk
 *.ap_
 *.aab
+releases/*.apk
 hs_err_pid*.log
 replay_pid*.log
 *.hprof

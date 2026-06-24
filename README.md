@@ -2,6 +2,12 @@
 
 App Android personal para listas de supermercado y gastos en efectivo. Sin publicidad, sin internet, datos guardados solo en el dispositivo.
 
+## Versión actual: 0.1.0-alpha
+
+Primera versión funcional. Incluye listas múltiples, artículos con cantidad/valor opcionales, marcar ítems y edición con pulsación larga.
+
+**Descargar APK:** [Releases en GitHub](https://github.com/GabeADemarco/Android-Lista-de-Compras/releases/latest)
+
 ## Requisitos
 
 - Android Studio (recomendado) o JDK 17 + Android SDK
