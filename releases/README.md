@@ -4,6 +4,7 @@ Los APK se publican aquí: https://github.com/GabeADemarco/Android-Lista-de-Comp
 
 | Versión | Archivo |
 |---------|---------|
+| 0.3.1-alpha | `MisListas-0.3.1-alpha.apk` |
 | 0.3.0-alpha | `MisListas-0.3.0-alpha.apk` |
 | 0.2.0-alpha | `MisListas-0.2.0-alpha.apk` |
 | 0.1.0-alpha | `MisListas-0.1.0-alpha.apk` |

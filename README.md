@@ -2,12 +2,10 @@
 
 App Android personal para listas de supermercado y gastos en efectivo. Sin publicidad, sin internet: todos los datos quedan guardados solo en tu teléfono.
 
-## Versión actual: 0.3.0-alpha
+## Versión actual: 0.3.1-alpha
 
-- Agregar varios artículos seguidos sin cerrar el diálogo
-- Mover artículos entre listas
-- Enlace a releases de GitHub en el header
-- Número de versión visible en el header
+- Chips más compactos (menos espacio entre pastillas)
+- Ícono de GitHub en el header para ir a releases
 
 **Descargar APK:** [Releases en GitHub](https://github.com/GabeADemarco/Android-Lista-de-Compras/releases/latest)
 
@@ -39,11 +37,11 @@ App Android personal para listas de supermercado y gastos en efectivo. Sin publi
 
 | Ícono | Función |
 |-------|---------|
-| Enlace externo | Abre **releases en GitHub** para ver o descargar actualizaciones |
+| GitHub (logo) | Abre **releases en GitHub** para ver o descargar actualizaciones |
 | Cuadrícula (⊞) | Cambia a **vista chips**: los artículos se ven como pastillas que llenan el renglón |
 | Lista (≡) | Vuelve a la **vista lista** clásica (nombre, cantidad y valor en renglones) |
 | Brillo (auto / sol / luna) | Cambia el **tema**: Sistema → Claro → Oscuro → Sistema |
-| Texto bajo el título | Muestra la **versión instalada** (ej. `0.3.0-alpha`) para comparar con GitHub |
+| Texto bajo el título | Muestra la **versión instalada** (ej. `0.3.1-alpha`) para comparar con GitHub |
 
 La preferencia de tema y de vista se **guarda sola** al cerrar la app.
 
@@ -81,7 +79,7 @@ En ambas vistas: tocar marca/desmarca; mantener apretado permite editar, mover o
 ### Opción A — Descargar APK desde GitHub (más fácil)
 
 1. Andá a [Releases](https://github.com/GabeADemarco/Android-Lista-de-Compras/releases/latest).
-2. Descargá `MisListas-0.3.0-alpha.apk` (o la última de [Releases](https://github.com/GabeADemarco/Android-Lista-de-Compras/releases/latest)).
+2. Descargá `MisListas-0.3.1-alpha.apk` (o la última de [Releases](https://github.com/GabeADemarco/Android-Lista-de-Compras/releases/latest)).
 3. Abrilo en el teléfono e instalalo.
 4. Si Android lo pide, permití **instalar apps desconocidas** para el explorador o app que uses para abrir el archivo.
 
@@ -120,6 +118,7 @@ gradlew.bat installDebug
 
 | Versión | Cambios |
 |---------|---------|
+| **0.3.1-alpha** | Chips más compactos, ícono de GitHub en el header |
 | **0.3.0-alpha** | Agregar artículos en racha, mover entre listas, link a releases, versión en header |
 | **0.2.0-alpha** | Modo oscuro, vista chips, preferencias guardadas |
 | **0.1.0-alpha** | Primera versión: listas, artículos, marcar/editar/eliminar |
