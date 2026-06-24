@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Brightness7
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -57,11 +56,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mislistas.app.AppLinks
 import com.mislistas.app.BuildConfig
+import com.mislistas.app.R
 import com.mislistas.app.data.ItemsViewMode
 import com.mislistas.app.data.ListItemEntity
 import com.mislistas.app.data.ListWithItems
@@ -104,7 +105,7 @@ fun MainScreen(viewModel: MainViewModel) {
                         },
                     ) {
                         Icon(
-                            imageVector = Icons.Default.OpenInNew,
+                            painter = painterResource(R.drawable.ic_github),
                             contentDescription = "Ver releases en GitHub",
                             tint = MaterialTheme.colorScheme.onPrimary,
                         )
@@ -374,9 +375,9 @@ private fun ListCard(
                         FlowRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                                .padding(horizontal = 12.dp, vertical = 2.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             sortedItems.forEach { item ->
                                 ItemChip(
@@ -431,13 +432,13 @@ private fun ItemChip(
 
     Surface(
         modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongPress),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(12.dp),
         color = chipColor,
     ) {
         Text(
             text = chipLabel(item),
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            style = MaterialTheme.typography.bodyMedium.copy(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            style = MaterialTheme.typography.labelLarge.copy(
                 textDecoration = if (isDone) TextDecoration.LineThrough else TextDecoration.None,
             ),
             color = textColor,
