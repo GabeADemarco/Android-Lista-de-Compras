@@ -81,4 +81,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleItemDone(item: ListItemEntity) {
         viewModelScope.launch { repository.toggleItemDone(item) }
     }
+
+    fun moveItem(item: ListItemEntity, targetListId: Long) {
+        viewModelScope.launch { repository.moveItem(item, targetListId) }
+    }
 }

@@ -1,5 +1,7 @@
 package com.mislistas.app.ui
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -12,11 +14,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
@@ -25,6 +30,7 @@ import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Brightness7
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -50,9 +56,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.mislistas.app.AppLinks
+import com.mislistas.app.BuildConfig
 import com.mislistas.app.data.ItemsViewMode
 import com.mislistas.app.data.ListItemEntity
 import com.mislistas.app.data.ListWithItems
@@ -70,12 +79,36 @@ fun MainScreen(viewModel: MainViewModel) {
     val itemsViewMode by viewModel.itemsViewMode.collectAsState()
     var dialogState by remember { mutableStateOf<DialogState?>(null) }
     var actionTarget by remember { mutableStateOf<ActionTarget?>(null) }
+    var moveItemTarget by remember { mutableStateOf<ListItemEntity?>(null) }
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mis Listas") },
+                title = {
+                    Column {
+                        Text("Mis Listas")
+                        Text(
+                            text = BuildConfig.VERSION_NAME,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                        )
+                    }
+                },
                 actions = {
+                    IconButton(
+                        onClick = {
+                            context.startActivity(
+                                Intent(Intent.ACTION_VIEW, Uri.parse(AppLinks.RELEASES_URL)),
+                            )
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.OpenInNew,
+                            contentDescription = "Ver releases en GitHub",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
                     IconButton(onClick = viewModel::toggleItemsViewMode) {
                         Icon(
                             imageVector = if (itemsViewMode == ItemsViewMode.LIST) {
@@ -192,10 +225,10 @@ fun MainScreen(viewModel: MainViewModel) {
                 initialName = "",
                 initialQuantity = "",
                 initialValue = "",
+                stayOpenOnConfirm = true,
                 onDismiss = { dialogState = null },
                 onConfirm = { name, quantity, value ->
                     viewModel.addItem(state.listId, name, quantity, value)
-                    dialogState = null
                 },
             )
 
@@ -221,49 +254,49 @@ fun MainScreen(viewModel: MainViewModel) {
     }
 
     actionTarget?.let { target ->
-        AlertDialog(
-            onDismissRequest = { actionTarget = null },
-            title = {
-                Text(
-                    when (target) {
-                        is ActionTarget.List -> "Lista"
-                        is ActionTarget.Item -> "Artículo"
-                    },
-                )
-            },
-            text = {
-                Text(
-                    when (target) {
-                        is ActionTarget.List -> target.list.name
-                        is ActionTarget.Item -> target.item.name
-                    },
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        when (target) {
-                            is ActionTarget.List -> dialogState = DialogState.EditList(target.list)
-                            is ActionTarget.Item -> dialogState = DialogState.EditItem(target.item)
-                        }
-                        actionTarget = null
-                    },
-                ) {
-                    Text("Editar")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        when (target) {
-                            is ActionTarget.List -> viewModel.deleteList(target.list.id)
-                            is ActionTarget.Item -> viewModel.deleteItem(target.item.id)
-                        }
-                        actionTarget = null
-                    },
-                ) {
-                    Text("Eliminar")
-                }
+        when (target) {
+            is ActionTarget.List -> ListActionDialog(
+                list = target.list,
+                onDismiss = { actionTarget = null },
+                onEdit = {
+                    dialogState = DialogState.EditList(target.list)
+                    actionTarget = null
+                },
+                onDelete = {
+                    viewModel.deleteList(target.list.id)
+                    actionTarget = null
+                },
+            )
+
+            is ActionTarget.Item -> ItemActionDialog(
+                item = target.item,
+                onDismiss = { actionTarget = null },
+                onEdit = {
+                    dialogState = DialogState.EditItem(target.item)
+                    actionTarget = null
+                },
+                onMove = {
+                    moveItemTarget = target.item
+                    actionTarget = null
+                },
+                onDelete = {
+                    viewModel.deleteItem(target.item.id)
+                    actionTarget = null
+                },
+            )
+        }
+    }
+
+    moveItemTarget?.let { item ->
+        MoveItemDialog(
+            item = item,
+            availableLists = lists
+                .map { it.list }
+                .filter { it.id != item.listId },
+            onDismiss = { moveItemTarget = null },
+            onSelectList = { listId ->
+                viewModel.moveItem(item, listId)
+                moveItemTarget = null
             },
         )
     }
@@ -457,6 +490,123 @@ private fun ItemRow(
 }
 
 @Composable
+private fun ListActionDialog(
+    list: ShoppingListEntity,
+    onDismiss: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Lista") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(list.name)
+                TextButton(onClick = onEdit, modifier = Modifier.fillMaxWidth()) {
+                    Text("Editar")
+                }
+                TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        },
+    )
+}
+
+@Composable
+private fun ItemActionDialog(
+    item: ListItemEntity,
+    onDismiss: () -> Unit,
+    onEdit: () -> Unit,
+    onMove: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Artículo") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(item.name)
+                TextButton(onClick = onEdit, modifier = Modifier.fillMaxWidth()) {
+                    Text("Editar")
+                }
+                TextButton(onClick = onMove, modifier = Modifier.fillMaxWidth()) {
+                    Text("Mover")
+                }
+                TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        },
+    )
+}
+
+@Composable
+private fun MoveItemDialog(
+    item: ListItemEntity,
+    availableLists: List<ShoppingListEntity>,
+    onDismiss: () -> Unit,
+    onSelectList: (Long) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Mover a otra lista") },
+        text = {
+            Column {
+                Text(
+                    text = "«${item.name}»",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                if (availableLists.isEmpty()) {
+                    Text("No hay otras listas. Creá una lista nueva primero.")
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .heightIn(max = 280.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        availableLists.forEach { list ->
+                            TextButton(
+                                onClick = { onSelectList(list.id) },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(
+                                    text = list.name,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        },
+    )
+}
+
+@Composable
 private fun NameDialog(
     title: String,
     confirmLabel: String,
@@ -499,6 +649,7 @@ private fun ItemDialog(
     initialName: String,
     initialQuantity: String,
     initialValue: String,
+    stayOpenOnConfirm: Boolean = false,
     onDismiss: () -> Unit,
     onConfirm: (name: String, quantity: String?, value: Double?) -> Unit,
 ) {
@@ -537,7 +688,14 @@ private fun ItemDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = { onConfirm(name, quantity, parseValue(valueText)) },
+                onClick = {
+                    onConfirm(name, quantity, parseValue(valueText))
+                    if (stayOpenOnConfirm) {
+                        name = ""
+                        quantity = ""
+                        valueText = ""
+                    }
+                },
                 enabled = isValid,
             ) {
                 Text(confirmLabel)

@@ -51,4 +51,15 @@ class ShoppingRepository(private val dao: ShoppingListDao) {
     suspend fun toggleItemDone(item: ListItemEntity) {
         dao.updateItem(item.copy(isDone = !item.isDone))
     }
+
+    suspend fun moveItem(item: ListItemEntity, targetListId: Long) {
+        if (item.listId == targetListId) return
+        val sortOrder = dao.maxItemSortOrder(targetListId) + 1
+        dao.updateItem(
+            item.copy(
+                listId = targetListId,
+                sortOrder = sortOrder,
+            ),
+        )
+    }
 }
