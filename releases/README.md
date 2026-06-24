@@ -1,3 +1,10 @@
-Los APK se publican en GitHub Releases, no en el historial de git.
+# Releases
 
-Descarga: https://github.com/GabeADemarco/Android-Lista-de-Compras/releases
+Los APK se publican aquí: https://github.com/GabeADemarco/Android-Lista-de-Compras/releases
+
+| Versión | Archivo |
+|---------|---------|
+| 0.2.0-alpha | `MisListas-0.2.0-alpha.apk` |
+| 0.1.0-alpha | `MisListas-0.1.0-alpha.apk` |
+
+Los archivos `.apk` de esta carpeta son copias locales de referencia; no se suben al historial de git.

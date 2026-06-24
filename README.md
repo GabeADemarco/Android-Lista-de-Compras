@@ -1,28 +1,86 @@
 # Android Lista de Compras
 
-App Android personal para listas de supermercado y gastos en efectivo. Sin publicidad, sin internet, datos guardados solo en el dispositivo.
+App Android personal para listas de supermercado y gastos en efectivo. Sin publicidad, sin internet: todos los datos quedan guardados solo en tu teléfono.
 
-## Versión actual: 0.1.0-alpha
+## Versión actual: 0.2.0-alpha
 
-Primera versión funcional. Incluye listas múltiples, artículos con cantidad/valor opcionales, marcar ítems y edición con pulsación larga.
+- Modo oscuro configurable (sistema / claro / oscuro)
+- Vista **lista** o **chips** para los artículos dentro de cada lista
+- Listas múltiples, cantidad y valor opcionales, total pendiente por lista
 
 **Descargar APK:** [Releases en GitHub](https://github.com/GabeADemarco/Android-Lista-de-Compras/releases/latest)
 
-## Requisitos
+---
 
-- Android Studio (recomendado) o JDK 17 + Android SDK
-- Dispositivo Android 8.0+ (API 26)
+## Cómo usar la app
+
+### Primeros pasos
+
+1. Abrí la app **Mis Listas**.
+2. Tocá el botón **+** (abajo a la derecha) para crear tu primera lista (ej. *Supermercado*, *Gastos enero*).
+3. Tocá el encabezado de la lista para **desplegarla**.
+4. Tocá **Agregar artículo** y completá el nombre. La cantidad y el valor son opcionales.
+5. En el supermercado, tocá cada artículo cuando lo pongas en el carrito: se **tacha y se apaga** (queda marcado como listo).
+
+### Gestos principales
+
+| Qué querés hacer | Cómo |
+|------------------|------|
+| Crear una lista nueva | Botón **+** flotante |
+| Desplegar o contraer una lista | Tocar el **encabezado** de la lista |
+| Marcar artículo como listo / desmarcar | **Tocar** el artículo |
+| Editar o eliminar lista o artículo | **Mantener apretado** sobre la lista o el artículo |
+| Agregar artículo a una lista | **Agregar artículo** (con la lista desplegada) |
+
+### Barra superior
+
+| Ícono | Función |
+|-------|---------|
+| Cuadrícula (⊞) | Cambia a **vista chips**: los artículos se ven como pastillas que llenan el renglón |
+| Lista (≡) | Vuelve a la **vista lista** clásica (nombre, cantidad y valor en renglones) |
+| Brillo (auto / sol / luna) | Cambia el **tema**: Sistema → Claro → Oscuro → Sistema |
+
+La preferencia de tema y de vista se **guarda sola** al cerrar la app.
+
+### Vista lista vs vista chips
+
+**Vista lista** (ideal para el super con detalles):
+- Muestra nombre, cantidad y valor de cada artículo.
+- Un artículo por renglón.
+
+**Vista chips** (aprovecha mejor el ancho de pantalla):
+- Cada artículo es una pastilla redondeada; van una al lado de la otra y bajan de línea si no entran.
+- Muestra solo el **nombre**, o **nombre x cantidad** si tiene cantidad (ej. `Leche x2`).
+- No muestra el precio en la pastilla, pero el **total pendiente** de la lista sigue visible abajo.
+
+En ambas vistas: tocar marca/desmarca; mantener apretado edita o elimina.
+
+### Cantidad y valor
+
+- **Cantidad:** texto libre (ej. `2`, `1 kg`, `pack x6`).
+- **Valor:** número para anotar gastos (ej. `1500` o `1500.50`). Sirve para llevar control y ver el total pendiente.
+- El **total pendiente** suma solo los artículos **no marcados** que tengan valor.
+
+### Ideas de uso
+
+| Lista | Para qué |
+|-------|----------|
+| Supermercado | Ir tachando lo que ya metiste en el carrito |
+| Gastos en efectivo | Anotar montos y después pasarlos a tu planilla |
+| Cualquier otra cosa | Lista de tareas, pendientes, etc. |
+
+---
 
 ## Instalación en el teléfono
 
-### Opción A — Android Studio
+### Opción A — Descargar APK desde GitHub (más fácil)
 
-1. Abrí Android Studio → **Open** → seleccioná la carpeta del proyecto.
-2. Esperá a que Gradle sincronice.
-3. Conectá el teléfono con **Depuración USB** activada (opcional).
-4. Pulsá **Run** y elegí tu dispositivo o emulador.
+1. Andá a [Releases](https://github.com/GabeADemarco/Android-Lista-de-Compras/releases/latest).
+2. Descargá `MisListas-0.2.0-alpha.apk`.
+3. Abrilo en el teléfono e instalalo.
+4. Si Android lo pide, permití **instalar apps desconocidas** para el explorador o app que uses para abrir el archivo.
 
-### Opción B — APK manual
+### Opción B — Compilar vos mismo
 
 En la raíz del proyecto:
 
@@ -30,33 +88,46 @@ En la raíz del proyecto:
 gradlew.bat assembleDebug
 ```
 
-El APK queda en `app\build\outputs\apk\debug\app-debug.apk`. Copialo al teléfono e instalalo.
+El APK queda en `app\build\outputs\apk\debug\app-debug.apk`.
 
-### Opción C — Instalar por cable
+### Opción C — Android Studio
+
+1. Abrí el proyecto en Android Studio.
+2. Conectá el teléfono (opcional) o usá un emulador.
+3. Pulsá **Run** (triángulo verde).
+
+### Opción D — Instalar por cable
 
 ```bat
 gradlew.bat installDebug
 ```
 
-## Uso
+---
 
-| Acción | Gestos |
-|--------|--------|
-| Crear lista | Botón **+** flotante |
-| Desplegar / contraer lista | Tocar el encabezado |
-| Marcar artículo como listo | Tocar el artículo |
-| Editar o eliminar lista / artículo | Mantener apretado |
-| Agregar artículo | **Agregar artículo** dentro de una lista desplegada |
+## Requisitos
 
-- **Cantidad** y **valor** son opcionales.
-- Si hay valores, se muestra el **total pendiente** (solo artículos no marcados).
-- Los datos se guardan localmente en el teléfono.
+- Android 8.0 o superior (API 26+)
+- Para compilar: Android Studio o JDK 17 + Android SDK
+
+---
+
+## Historial de versiones
+
+| Versión | Cambios |
+|---------|---------|
+| **0.2.0-alpha** | Modo oscuro, vista chips, preferencias guardadas |
+| **0.1.0-alpha** | Primera versión: listas, artículos, marcar/editar/eliminar |
+
+---
 
 ## Tecnologías
 
 - Kotlin + Jetpack Compose
 - Room (base de datos local)
+- DataStore (preferencias de tema y vista)
 - Material 3
+
+---
 
 ## Licencia
 
