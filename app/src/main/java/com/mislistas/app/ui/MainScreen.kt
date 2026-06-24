@@ -52,7 +52,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
-    val lists by viewModel.listsWithItems.collectAsState()
+    val lists by viewModel.listsWithItems.collectAsState(initial = emptyList())
     var dialogState by remember { mutableStateOf<DialogState?>(null) }
     var actionTarget by remember { mutableStateOf<ActionTarget?>(null) }
 
@@ -110,7 +110,7 @@ fun MainScreen(viewModel: MainViewModel) {
                         onListLongPress = { actionTarget = ActionTarget.List(it) },
                         onItemClick = { viewModel.toggleItemDone(it) },
                         onItemLongPress = { actionTarget = ActionTarget.Item(it) },
-                        onAddItem = { dialogState = DialogState.NewItem(it.list.id) },
+                        onAddItem = { dialogState = DialogState.NewItem(listWithItems.list.id) },
                     )
                 }
             }
