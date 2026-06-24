@@ -2,8 +2,11 @@ package com.mislistas.app.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,10 +16,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Brightness4
+import androidx.compose.material.icons.filled.BrightnessAuto
+import androidx.compose.material.icons.filled.Brightness7
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -27,6 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -39,12 +49,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.mislistas.app.data.ItemsViewMode
 import com.mislistas.app.data.ListItemEntity
 import com.mislistas.app.data.ListWithItems
 import com.mislistas.app.data.ShoppingListEntity
+import com.mislistas.app.data.ThemeMode
 import com.mislistas.app.ui.viewmodel.MainViewModel
 import java.text.NumberFormat
 import java.util.Locale
@@ -53,6 +66,8 @@ import java.util.Locale
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
     val lists by viewModel.listsWithItems.collectAsState(initial = emptyList())
+    val themeMode by viewModel.themeMode.collectAsState()
+    val itemsViewMode by viewModel.itemsViewMode.collectAsState()
     var dialogState by remember { mutableStateOf<DialogState?>(null) }
     var actionTarget by remember { mutableStateOf<ActionTarget?>(null) }
 
@@ -60,9 +75,34 @@ fun MainScreen(viewModel: MainViewModel) {
         topBar = {
             TopAppBar(
                 title = { Text("Mis Listas") },
+                actions = {
+                    IconButton(onClick = viewModel::toggleItemsViewMode) {
+                        Icon(
+                            imageVector = if (itemsViewMode == ItemsViewMode.LIST) {
+                                Icons.Default.Apps
+                            } else {
+                                Icons.Default.ViewList
+                            },
+                            contentDescription = if (itemsViewMode == ItemsViewMode.LIST) {
+                                "Cambiar a vista chips"
+                            } else {
+                                "Cambiar a vista lista"
+                            },
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
+                    IconButton(onClick = viewModel::cycleThemeMode) {
+                        Icon(
+                            imageVector = themeIcon(themeMode),
+                            contentDescription = themeContentDescription(themeMode),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             )
         },
@@ -71,7 +111,11 @@ fun MainScreen(viewModel: MainViewModel) {
                 onClick = { dialogState = DialogState.NewList },
                 containerColor = MaterialTheme.colorScheme.primary,
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Nueva lista", tint = MaterialTheme.colorScheme.onPrimary)
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "Nueva lista",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                )
             }
         },
     ) { padding ->
@@ -106,6 +150,7 @@ fun MainScreen(viewModel: MainViewModel) {
                 items(lists, key = { it.list.id }) { listWithItems ->
                     ListCard(
                         listWithItems = listWithItems,
+                        itemsViewMode = itemsViewMode,
                         onToggleExpanded = { viewModel.toggleListExpanded(it) },
                         onListLongPress = { actionTarget = ActionTarget.List(it) },
                         onItemClick = { viewModel.toggleItemDone(it) },
@@ -224,10 +269,11 @@ fun MainScreen(viewModel: MainViewModel) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun ListCard(
     listWithItems: ListWithItems,
+    itemsViewMode: ItemsViewMode,
     onToggleExpanded: (ShoppingListEntity) -> Unit,
     onListLongPress: (ShoppingListEntity) -> Unit,
     onItemClick: (ListItemEntity) -> Unit,
@@ -280,12 +326,34 @@ private fun ListCard(
             }
 
             if (list.isExpanded) {
-                sortedItems.forEach { item ->
-                    ItemRow(
-                        item = item,
-                        onClick = { onItemClick(item) },
-                        onLongPress = { onItemLongPress(item) },
-                    )
+                when (itemsViewMode) {
+                    ItemsViewMode.LIST -> {
+                        sortedItems.forEach { item ->
+                            ItemRow(
+                                item = item,
+                                onClick = { onItemClick(item) },
+                                onLongPress = { onItemLongPress(item) },
+                            )
+                        }
+                    }
+
+                    ItemsViewMode.CHIPS -> {
+                        FlowRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            sortedItems.forEach { item ->
+                                ItemChip(
+                                    item = item,
+                                    onClick = { onItemClick(item) },
+                                    onLongPress = { onItemLongPress(item) },
+                                )
+                            }
+                        }
+                    }
                 }
 
                 if (totalValue > 0.0) {
@@ -306,6 +374,43 @@ private fun ListCard(
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ItemChip(
+    item: ListItemEntity,
+    onClick: () -> Unit,
+    onLongPress: () -> Unit,
+) {
+    val isDone = item.isDone
+    val chipColor = if (isDone) {
+        if (isSystemInDarkTheme()) Color(0xFF3A3A3A) else Color(0xFFE0E0E0)
+    } else {
+        MaterialTheme.colorScheme.primaryContainer
+    }
+    val textColor = if (isDone) {
+        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+    } else {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    }
+
+    Surface(
+        modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongPress),
+        shape = RoundedCornerShape(20.dp),
+        color = chipColor,
+    ) {
+        Text(
+            text = chipLabel(item),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            style = MaterialTheme.typography.bodyMedium.copy(
+                textDecoration = if (isDone) TextDecoration.LineThrough else TextDecoration.None,
+            ),
+            color = textColor,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -444,6 +549,27 @@ private fun ItemDialog(
             }
         },
     )
+}
+
+private fun chipLabel(item: ListItemEntity): String {
+    val quantity = item.quantity?.trim()
+    return if (!quantity.isNullOrEmpty()) {
+        "${item.name} x$quantity"
+    } else {
+        item.name
+    }
+}
+
+private fun themeIcon(mode: ThemeMode) = when (mode) {
+    ThemeMode.SYSTEM -> Icons.Default.BrightnessAuto
+    ThemeMode.LIGHT -> Icons.Default.Brightness7
+    ThemeMode.DARK -> Icons.Default.Brightness4
+}
+
+private fun themeContentDescription(mode: ThemeMode) = when (mode) {
+    ThemeMode.SYSTEM -> "Tema: sistema. Tocar para claro"
+    ThemeMode.LIGHT -> "Tema: claro. Tocar para oscuro"
+    ThemeMode.DARK -> "Tema: oscuro. Tocar para sistema"
 }
 
 private sealed interface DialogState {

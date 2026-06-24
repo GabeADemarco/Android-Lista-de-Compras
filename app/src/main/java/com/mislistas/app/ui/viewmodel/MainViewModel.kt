@@ -4,17 +4,49 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.mislistas.app.data.AppDatabase
+import com.mislistas.app.data.ItemsViewMode
 import com.mislistas.app.data.ListItemEntity
 import com.mislistas.app.data.ShoppingListEntity
 import com.mislistas.app.data.ShoppingRepository
+import com.mislistas.app.data.ThemeMode
+import com.mislistas.app.data.UserPreferencesRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = ShoppingRepository(
         AppDatabase.getInstance(application).shoppingListDao(),
     )
+    private val preferences = UserPreferencesRepository(application)
 
     val listsWithItems = repository.listsWithItems
+
+    val themeMode = preferences.themeMode.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = ThemeMode.SYSTEM,
+    )
+
+    val itemsViewMode = preferences.itemsViewMode.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = ItemsViewMode.LIST,
+    )
+
+    fun cycleThemeMode() {
+        viewModelScope.launch {
+            val current = themeMode.value
+            preferences.setThemeMode(current.next())
+        }
+    }
+
+    fun toggleItemsViewMode() {
+        viewModelScope.launch {
+            val current = itemsViewMode.value
+            preferences.setItemsViewMode(current.toggle())
+        }
+    }
 
     fun addList(name: String) {
         if (name.isBlank()) return
